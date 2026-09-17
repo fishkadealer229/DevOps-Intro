@@ -1,0 +1,108 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'app/**'
+      - '.github/workflows/ci.yml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'app/**'
+      - '.github/workflows/ci.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  vet:
+    name: vet (${{ matrix.go-version }})
+    runs-on: ubuntu-24.04
+
+    strategy:
+      fail-fast: false
+      matrix:
+        go-version: ['1.23', '1.24']
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+
+      - name: Go Setup
+        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16
+        with:
+          go-version: ${{ matrix.go-version }}
+          cache: true
+          cache-dependency-path: app/go.mod
+
+      - name: Go vet
+        working-directory: app
+        run: go vet ./...
+
+  test:
+    name: test (${{ matrix.go-version }})
+    runs-on: ubuntu-24.04
+
+    strategy:
+      fail-fast: false
+      matrix:
+        go-version: ['1.23', '1.24']
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+
+      - name: Go Setup
+        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16
+        with:
+          go-version: ${{ matrix.go-version }}
+          cache: true
+          cache-dependency-path: app/go.mod
+
+      - name: Go test
+        working-directory: app
+        run: go test -race -count=1 ./...
+
+  lint:
+    name: lint
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+
+      - name: Setup Go
+        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16
+        with:
+          go-version: '1.24'
+          cache: true
+          cache-dependency-path: app/go.mod
+
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@4afd733a84b1f43292c63897423277bb7f4313a9
+        with:
+          version: v2.5.0
+          working-directory: app
+
+  ci-ok:
+    name: ci-ok
+    if: always()
+    needs:
+      - vet
+      - test
+      - lint
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Check required jobs
+        shell: bash
+        run: |
+          if [[ "${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}" == "true" ]]; then
+            echo "CI failed"
+            exit 1
+          fi
+
+          echo "All CI jobs passed"
