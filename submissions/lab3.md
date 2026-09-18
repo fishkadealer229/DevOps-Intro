@@ -2,6 +2,27 @@
 
 ## Task 1
 
+### 1. Path
+I chose GitHub Actions, because I think GitHub is a more convenient tool, and simply more familiar for me
+
+### 2. Green CI
+Green CI run:
+https://github.com/fishkadealer229/DevOps-Intro/actions/runs/35296299380
+
+### 3. Failed CI run
+Failed run:
+![img.png](img.png)
+![img_1.png](img_1.png)
+
+Fix commit:
+https://github.com/fishkadealer229/DevOps-Intro/commit/a50a3e19696e11d73684a3d761b4605b1a185407
+
+### 4. Branch protection
+Screenshot of branch protection:
+![img_2.png](img_2.png)
+![img_3.png](img_3.png)
+
+### 5. Questions
 - ### Why pin ubuntu-24.04 instead of ubuntu-latest?
     Because ubuntu-latest can change on other Ubuntu version over time which may cause the previously running pipeline to stop working or start behaving differently
 
