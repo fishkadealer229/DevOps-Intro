@@ -4,10 +4,16 @@ on:
   push:
     branches:
       - main
+    paths:
+      - 'app/**'
+      - '.github/workflows/ci.yml'
 
   pull_request:
     branches:
       - main
+    paths:
+      - 'app/**'
+      - '.github/workflows/ci.yml'
 
 permissions:
   contents: read
@@ -16,6 +22,13 @@ jobs:
   vet:
     runs-on: ubuntu-24.04
 
+    strategy:
+      fail-fast: false
+      matrix:
+        go-version:
+          - '1.23'
+          - '1.24'
+
     steps:
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
@@ -23,7 +36,9 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16
         with:
-          go-version: '1.24'
+          go-version: ${{ matrix.go-version }}
+          cache: true
+          cache-dependency-path: app/go.mod
 
       - name: Go vet
         working-directory: app
@@ -32,6 +47,13 @@ jobs:
   test:
     runs-on: ubuntu-24.04
 
+    strategy:
+      fail-fast: false
+      matrix:
+        go-version:
+          - '1.23'
+          - '1.24'
+
     steps:
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
@@ -39,7 +61,9 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16
         with:
-          go-version: '1.24'
+          go-version: ${{ matrix.go-version }}
+          cache: true
+          cache-dependency-path: app/go.mod
 
       - name: Go test
         working-directory: app
@@ -56,6 +80,8 @@ jobs:
         uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16
         with:
           go-version: '1.24'
+          cache: true
+          cache-dependency-path: app/go.mod
 
       - name: Run golangci-lint
         uses: golangci/golangci-lint-action@4afd733a84b1f43292c63897423277bb7f4313a9
