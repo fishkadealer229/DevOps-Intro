@@ -1,0 +1,6 @@
+# Build context hygiene: never ship runtime state or editor noise into the image.
+data/
+.git/
+.idea/
+*.md
+.dockerignore

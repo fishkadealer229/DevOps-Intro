@@ -1,0 +1,33 @@
+# Render Blueprint for QuickNotes — Lab 10 Task 2, Option A.
+#
+# NOT ACTIVE in this submission: the Render signup flow asked for card
+# verification, so Task 2 was completed on GitHub Codespaces (Option B).
+# This file is the config-as-code equivalent of what the dashboard service
+# would have been, kept so the intended production setup is reproducible.
+#
+# Usage once an account works: Render Dashboard -> New -> Blueprint -> point at
+# this repo, or `render blueprint launch`.
+services:
+  - type: web
+    name: quicknotes
+    runtime: image
+    # Public ghcr.io package from Task 1 — no registry credentials needed.
+    image:
+      url: ghcr.io/fishkadealer229/devops-intro/quicknotes:v0.1.0
+    plan: free
+    region: frankfurt
+    healthCheckPath: /health
+    # Redeploys come from the release workflow's deploy hook, not from git.
+    autoDeploy: false
+    envVars:
+      # QuickNotes reads ADDR (default :8080); Render routes to $PORT
+      # (default 10000). Pin both to the same value so the platform never has
+      # to detect the real port and restart the deploy.
+      - key: ADDR
+        value: ":8080"
+      - key: PORT
+        value: "8080"
+      - key: DATA_PATH
+        value: /data/notes.json
+      - key: SEED_PATH
+        value: /app/seed.json

@@ -1,0 +1,42 @@
+{
+  // Lab 10 — Task 2, Option B (GitHub Codespaces).
+  //
+  // Goal: every codespace start runs the *published* QuickNotes image from
+  // Task 1 and forwards port 8080 so the API is reachable at
+  // https://<codespace>-8080.app.github.dev.
+  //
+  // Why a Docker-enabled base image instead of pointing `image` straight at
+  // ghcr.io/.../quicknotes? The QuickNotes runtime image is distroless: it has
+  // no shell, no package manager and no Node, so it cannot host a dev container.
+  // It has to be *run* by Docker from inside the codespace, which is why the
+  // docker-in-docker feature is required.
+  "name": "QuickNotes (Lab 10, Option B)",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
+
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {
+      "version": "latest",
+      "moby": true
+    }
+  },
+
+  // 8080 is the port QuickNotes listens on (ADDR=:8080). Codespaces cannot make
+  // a port public from devcontainer.json — that is a per-codespace setting.
+  "forwardPorts": [8080],
+  "portsAttributes": {
+    "8080": {
+      "label": "QuickNotes API",
+      "onAutoForward": "notify"
+    }
+  },
+
+  // Runs on every codespace start. `docker start` (rather than a fresh
+  // `docker run`) is deliberate: the container filesystem then survives a
+  // stop/start, which is exactly the note-persistence behaviour Task 2.2(5)
+  // asks about — Codespaces storage is persistent, Render's is not.
+  "postStartCommand": "bash -c 'docker start quicknotes 2>/dev/null || docker run -d --name quicknotes -p 8080:8080 -e ADDR=:8080 -e DATA_PATH=/data/notes.json -e SEED_PATH=/app/seed.json ghcr.io/fishkadealer229/devops-intro/quicknotes:v0.1.0'",
+
+  "hostRequirements": {
+    "cpus": 2
+  }
+}
